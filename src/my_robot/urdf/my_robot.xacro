@@ -76,6 +76,10 @@
 
   </link>
 
+  <gazebo reference = "chassis">
+    <material> Gazebo/Blue </material>
+  </gazebo>
+
   <link name="left_wheel">
 	  <inertial>
     	<mass value="5.0"/>
@@ -103,6 +107,10 @@
     </collision>
 	  
   </link>
+
+  <gazebo reference = "left_wheel">
+    <material> Gazebo/Green </material>
+  </gazebo>
 
   <link name="right_wheel">
 	  <inertial>
@@ -132,6 +140,10 @@
 	  
   </link>
 
+  <gazebo reference = "right_wheel">
+    <material> Gazebo/Green </material>
+  </gazebo>
+
   <link name="camera">
 
     <box_inertia x="0.05" y="0.05" z="0.05" m="0.1" />
@@ -159,6 +171,10 @@
       </geometry>      
     </collision>       
   </link>
+
+  <gazebo reference = "camera">
+    <material> Gazebo/Red </material>
+  </gazebo>
 
   <link name="hokuyo">
     <inertial>
