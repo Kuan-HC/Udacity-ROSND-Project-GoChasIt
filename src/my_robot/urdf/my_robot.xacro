@@ -2,6 +2,8 @@
 
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <xacro:include filename="$(find my_robot)/urdf/my_robot.gazebo" />
+
   <material name="blue">
     <color rgba="0 0 0.8 1"/>
   </material>
@@ -11,6 +13,7 @@
   <material name="red">
     <color rgba="1 0 0 1"/>
   </material>
+  
 
   <link name="robot_footprint"></link>
  
@@ -197,24 +200,24 @@
     <dynamics damping="1.0" friction="1.0"/>
   </joint>
 
-<joint name="robot_footprint_joint" type="fixed">
+  <joint name="robot_footprint_joint" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="robot_footprint"/>
     <child link="chassis" />
- </joint>
+  </joint>
 
- <joint name="camera_name" type="fixed">
+  <joint name="camera_name" type="fixed">
    <origin xyz="0.2 0.0 0.0" rpy="0.0 0.0 0.0"/>
    <parent link="chassis"/>
    <child link="camera"/>
    <axis xyz="0 1 0"/>
- </joint>
+  </joint>
 
-<joint name="hokuyo_joint" type="fixed">
-  <origin xyz="0.15 0.0 0.1" rpy="0.0 0.0 0.0"/>
-  <parent link="chassis"/>
-  <child link="hokuyo"/>
-</joint>
+  <joint name="hokuyo_joint" type="fixed">
+    <origin xyz="0.15 0.0 0.1" rpy="0.0 0.0 0.0"/>
+    <parent link="chassis"/>
+    <child link="hokuyo"/>
+  </joint>
 
 
 
