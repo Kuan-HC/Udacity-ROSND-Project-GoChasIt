@@ -24,8 +24,16 @@ void process_image_callback(const sensor_msgs::Image img)
 {
 
     int white_pixel = 255;
+    static bool initialized = false;
 
-    //ROS_INFO(" Image Height: %i,  Width : %i", img.height, img.width);   
+    if (initialized == false)
+    {
+        ROS_INFO(" Image Height: %i,  Width : %i", img.height, img.width);  
+        ROS_INFO(" Step: %i", img.step);  
+        initialized = true;
+    }
+
+     
 
     // TODO: Loop through each pixel in the image and check if there's a bright white one
     // Then, identify if this pixel falls in the left, mid, or right side of the image
