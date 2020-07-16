@@ -2,6 +2,9 @@
 #include "ball_chaser/DriveToTarget.h"
 #include <sensor_msgs/Image.h>
 
+#define left_boundary  350U
+#define right_boundary 450U
+
 // Define a global client that can request services
 ros::ServiceClient client;
 
@@ -23,30 +26,71 @@ void drive_robot(float lin_x, float ang_z)
 void process_image_callback(const sensor_msgs::Image img)
 {
 
-    int white_pixel = 255;
+    const int white_pixel = 255;
     static bool initialized = false;
+    static unsigned int data_langth;
 
     if (initialized == false)
     {
         ROS_INFO(" Image Height: %i,  Width : %i", img.height, img.width);  
         ROS_INFO(" Step: %i", img.step);  
-        initialized = true;
+        data_langth = img.step * img.height;
+        ROS_INFO(" Data_length: %i", data_langth);
+        initialized = true;  
+        ROS_INFO("Ready to receive image from camera");     
     }
-
-     
-
-    // TODO: Loop through each pixel in the image and check if there's a bright white one
-    // Then, identify if this pixel falls in the left, mid, or right side of the image
-    // Depending on the white ball position, call the drive_bot function and pass velocities to it
-    // Request a stop when there's no white ball seen by the camera
-    for (int i = 0; i < img.height * img.step; i++) 
+    /***********************************************************************************
+     * Height:800 Width:800 Step: 2400 (Full row length in byte)
+     * Even though this sensor_msgs/Image short of detailed explanation in
+     * http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html
+     * Presume that step contents three layers(R,G,B) in one row, which means
+     * data[0]:first pixel   data[3]: second pixel data[6]: third pixel and so on
+     * ********************************************************************************/
+        
+    /***********************************************************************************
+     *  Analyze received image, it shows that white ball would appear only in the middle.
+     *  Therefore, upper and bottom part can be neglect.
+     *  In this project, rows in range 3/8 to 5/8 are took into account.
+     *  Count the number of white pixels and sum of white pixels x positon to calculate
+     *  white area center position.
+     *  Following instructure implement this
+     * *********************************************************************************/
+    static const unsigned int start_pixel = data_langth*3/8;
+    static const unsigned int end_pixel = data_langth*5/8;
+    
+    /*************************************************************************************
+     * For Gazebo Env, just consider sole RGB layer would be enough
+     * **********************************************************************************/
+    unsigned long int pixel_x_pos_sum = 0U;
+    unsigned int pixel_num_sum = 0U;
+    unsigned int center_x_pos = 0U;
+    for (unsigned int index = start_pixel; index <= end_pixel; index += 3U)
     {
-        if(img.data[i] == white_pixel)
+        if(img.data[index] == white_pixel)
         {
-            ROS_INFO("See White Ball at Index %i",i);
+            pixel_x_pos_sum += (index%2400U)/3U;
+            pixel_num_sum++;
         }
     }
-
+    if(pixel_num_sum != 0U)
+    {
+        center_x_pos = pixel_x_pos_sum / pixel_num_sum;
+        //ROS_INFO("White area center position %i, Number of white pixels: %i ",center_x_pos,pixel_num_sum);  /* for tunning */
+        if(center_x_pos < left_boundary) 
+            drive_robot( 0.0f, 0.15f);
+        else if (center_x_pos < right_boundary)
+        {   
+            /* if pixel number is greater than 40000, it's close enough */
+            if(pixel_num_sum < 40000U)
+                drive_robot( 0.3f, 0.0f);
+            else
+                drive_robot( 0.0f, 0.0f);
+        }
+        else 
+            drive_robot( 0.0f, -0.15f);
+    }
+    else
+         drive_robot( 0.0f, 0.0f);
 }
 
 int main(int argc, char** argv)
