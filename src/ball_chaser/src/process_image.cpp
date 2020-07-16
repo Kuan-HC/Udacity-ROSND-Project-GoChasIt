@@ -2,8 +2,8 @@
 #include "ball_chaser/DriveToTarget.h"
 #include <sensor_msgs/Image.h>
 
-#define left_boundary  350U
-#define right_boundary 450U
+#define left_boundary  300U
+#define right_boundary 500U
 
 // Define a global client that can request services
 ros::ServiceClient client;
@@ -77,17 +77,17 @@ void process_image_callback(const sensor_msgs::Image img)
         center_x_pos = pixel_x_pos_sum / pixel_num_sum;
         //ROS_INFO("White area center position %i, Number of white pixels: %i ",center_x_pos,pixel_num_sum);  /* for tunning */
         if(center_x_pos < left_boundary) 
-            drive_robot( 0.0f, 0.15f);
+            drive_robot( 0.0f, 3.0f);
         else if (center_x_pos < right_boundary)
         {   
             /* if pixel number is greater than 40000, it's close enough */
             if(pixel_num_sum < 40000U)
-                drive_robot( 0.3f, 0.0f);
+                drive_robot( 3.0f, 0.0f);
             else
                 drive_robot( 0.0f, 0.0f);
         }
         else 
-            drive_robot( 0.0f, -0.15f);
+            drive_robot( 0.0f, -3.0f);
     }
     else
          drive_robot( 0.0f, 0.0f);
