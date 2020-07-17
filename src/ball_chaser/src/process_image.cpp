@@ -4,6 +4,16 @@
 
 #define left_boundary  300U
 #define right_boundary 500U
+#define image_midoint  400U
+#define ball_pixels  50000U
+
+enum move_state
+{
+    Standby,
+    Turn_R,
+    Turn_L,
+    Forward
+};
 
 // Define a global client that can request services
 ros::ServiceClient client;
@@ -64,6 +74,8 @@ void process_image_callback(const sensor_msgs::Image img)
     unsigned long int pixel_x_pos_sum = 0U;
     unsigned int pixel_num_sum = 0U;
     unsigned int center_x_pos = 0U;
+    static unsigned char  action;
+
     for (unsigned int index = start_pixel; index <= end_pixel; index += 3U)
     {
         if(img.data[index] == white_pixel)
@@ -76,21 +88,70 @@ void process_image_callback(const sensor_msgs::Image img)
     {
         center_x_pos = pixel_x_pos_sum / pixel_num_sum;
         //ROS_INFO("White area center position %i, Number of white pixels: %i ",center_x_pos,pixel_num_sum);  /* for tunning */
-        if(center_x_pos < left_boundary) 
-            drive_robot( 0.0f, 3.0f);
-        else if (center_x_pos < right_boundary)
-        {   
-            /* if pixel number is greater than 40000, it's close enough */
-            if(pixel_num_sum < 40000U)
-                drive_robot( 3.0f, 0.0f);
-            else
-                drive_robot( 0.0f, 0.0f);
+        switch(action)
+        {
+            case Standby:
+                if(center_x_pos < left_boundary)
+                    action = Turn_L;
+                else if(center_x_pos > right_boundary)
+                    action = Turn_R;
+                else if(pixel_num_sum < ball_pixels)
+                     action = Forward;
+                else
+                    /* Do nothing  stay in this state*/
+                break;
+
+            case Turn_R:
+                if(center_x_pos <= image_midoint)
+                {
+                    if(pixel_num_sum < ball_pixels)
+                        action = Forward;
+                    else
+                        action = Standby;
+                }
+                break;
+
+            case Turn_L:
+                if(center_x_pos >= image_midoint)
+                {
+                    if(pixel_num_sum < ball_pixels)
+                        action = Forward;
+                    else
+                        action = Standby;
+                }
+                break;
+
+            case Forward:
+                if(center_x_pos > right_boundary)
+                    action = Turn_R;
+
+                else if(center_x_pos < left_boundary)
+                    action = Turn_L;
+
+                else if(pixel_num_sum >= ball_pixels)    
+                    action = Standby;
+                break;
         }
-        else 
-            drive_robot( 0.0f, -3.0f);
+
+        switch(action)
+        {
+            case Standby:
+                drive_robot( 0.0f, 0.0f);
+                break;
+            case Turn_R:
+                drive_robot( 0.0f, -0.2f);
+                break;
+            case Turn_L:
+                drive_robot( 0.0f, 0.2f);
+                break;
+            case Forward:
+                drive_robot( 0.5f, 0.0f);
+                break;
+        }
+
     }
     else
-         drive_robot( 0.0f, 0.0f);
+         drive_robot( 0.0f, 0.0f);  /* whit ball not in image stop*/
 }
 
 int main(int argc, char** argv)
