@@ -60,10 +60,14 @@ void process_image_callback(const sensor_msgs::Image img)
     /***********************************************************************************
      *  Analyze received image, it shows that white ball would appear only in the middle.
      *  Therefore, upper and bottom part can be neglect.
-     *  In this project, rows in range 3/8 to 5/8 are took into account.
+     *  In this project, rows in range 3/8 to 5/8 are taken into account.
      *  Count the number of white pixels and sum of white pixels x positon to calculate
      *  white area center position.
-     *  Following instructure implement this
+     *  Following instructions implement this
+     *  white detection:
+     *  img.data[index]: R
+     *  img.data[index+1]: G
+     *  img.data[index+2]: B    when R, G,B equal to 255 -> white
      * *********************************************************************************/
     static const unsigned int start_pixel = data_langth*3/8;
     static const unsigned int end_pixel = data_langth*5/8;
@@ -78,7 +82,7 @@ void process_image_callback(const sensor_msgs::Image img)
 
     for (unsigned int index = start_pixel; index <= end_pixel; index += 3U)
     {
-        if(img.data[index] == white_pixel)
+        if(img.data[index] == white_pixel  && img.data[index+1] == white_pixel && img.data[index+2] == white_pixel )
         {
             pixel_x_pos_sum += (index%2400U)/3U;
             pixel_num_sum++;
