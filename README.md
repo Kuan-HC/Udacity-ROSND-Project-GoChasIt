@@ -1,5 +1,5 @@
 # ROSND Go Chase It
-<img src="World.JPG"/>
+<img src="robot.gif"/>
 
 ## Dependencies for Running Locally
 * ROS (tested in melodic)
